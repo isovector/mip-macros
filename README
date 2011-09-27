@@ -1,3 +1,9 @@
+===============UPDATES===============
+
+2011-09-27: Added some debugging constructs: the PAUSE macro and .print psuedo-opcode.
+
+
+
 ===============NOTES===============
 
 This project allows one to use C-style preprocessor macros to generate assembly code. It really consists of just one
@@ -21,6 +27,9 @@ Good "luck"!
 =============EXAMPLE===============
 
 ; This example calculates the factorial of register $1, and puts it in register $3
+
+.print "Press any key to calculate the factorial"
+PAUSE
 
 STORE(n, $1)        ; set our argument for the fnFactorial call
 CALL(fnFactorial)
@@ -51,6 +60,17 @@ DECLARE(n) ; initialize our argument
 
 
 ==========MACRO REFERENCE==========
+
+.print "<string>"
+-----------------
+Outputs <string>\n to stdout.
+
+
+PAUSE
+-----
+Pauses the program and waits for a keypress before continuing. Because behind the scenes this behaves as reading
+from stdin, register $29 will contain the ascii value of pressed key directly after the call.
+
 
 PUSH($registers_num, $reg1 [, $reg2, [...]])
 --------------------------------------------
