@@ -7,6 +7,8 @@ may add custom macros to the header on expander.php, or custom functionality to 
 Some notes about the generated assembly: register $29 is used internally for several constructs, and as such should
 NOT, repeat NOT, be relied upon for user data.
 
+You may use variables to pass arguments to functions. See the example for the proper way of accomplishing this.
+
 The immediate result of a function call can be obtained from the special variable 'return'.
 
 Usage is as follows:
@@ -53,13 +55,14 @@ DECLARE(n) ; initialize our argument
 PUSH($registers_num, $reg1 [, $reg2, [...]])
 --------------------------------------------
 Pushes registers $reg# into the stack in REVERSE ORDER (ie: $reg1 is the furthest from the current stack pointer). 
-$registers_num must be equal to the number of registers in the list.
+$registers_num must be equal to the number of registers in the list. PUSH and POP both have a limit of 16 registers
+per call.
 
 
 POP($registers_num, $reg1 [, $reg2, [...]])
 -------------------------------------------
 Performs the opposite function of PUSH() for the same arguments. If popping a subset of the above call, remember
-that you pop right-to-left.
+that you pop right-to-left. PUSH and POP both have a limit of 16 registers per call.
 
 
 CALL($function_name)
