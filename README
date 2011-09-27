@@ -1,0 +1,94 @@
+===============NOTES===============
+
+This project allows one to use C-style preprocessor macros to generate assembly code. It really consists of just one
+file: expander.php. This file defines the macros described below, as well as a mechanism for expanding them out. You
+may add custom macros to the header on expander.php, or custom functionality to the php itself.
+
+Some notes about the generated assembly: register $29 is used internally for several constructs, and as such should
+NOT, repeat NOT, be relied upon for user data.
+
+The immediate result of a function call can be obtained from the special variable 'return'.
+
+Usage is as follows:
+./expander.php <filename>
+
+Good "luck"!
+
+
+
+=============EXAMPLE===============
+
+; This example calculates the factorial of register $1, and puts it in register $3
+
+STORE(n, $1)        ; set our argument for the fnFactorial call
+CALL(fnFactorial)
+VAR(return, $3)     ; $3 = factorial($1)
+jr $31
+
+fnFactorial:
+    PUSH(5, $1, $2, $3, $4, $5) ; make a 5-register frame stack
+    
+    CONST($1, 1)    ; $1 = 1
+    VAR(n, $2)
+    
+    slt $3, $2, $1      ; if (n >= 1), then
+    bne $3, $0, basecase
+        sub $3, $2, $1      ; $3 = n - 1
+        STORE(n, $3)
+        CALL(fnFactorial)
+        VAR(return, $3)     ; $3 = factorial(n - 1)
+        mult $2, $3
+        mflo $1             ; $1 = n * factorial(n - 1)
+    
+    basecase:
+    ; return $1 and clear the frame stack
+    RETURN($1, 5, $1, $2, $3, $4, $5)
+    
+DECLARE(n) ; initialize our argument
+
+
+
+==========MACRO REFERENCE==========
+
+PUSH($registers_num, $reg1 [, $reg2, [...]])
+--------------------------------------------
+Pushes registers $reg# into the stack in REVERSE ORDER (ie: $reg1 is the furthest from the current stack pointer). 
+$registers_num must be equal to the number of registers in the list.
+
+
+POP($registers_num, $reg1 [, $reg2, [...]])
+-------------------------------------------
+Performs the opposite function of PUSH() for the same arguments. If popping a subset of the above call, remember
+that you pop right-to-left.
+
+
+CALL($function_name)
+--------------------
+Calls the function at label $function_name. Automatically pushes/pops register $31 on the stack.
+
+
+RETURN($value, $registers_num, $reg1 [, $reg2, [...]])
+------------------------------------------------------
+Stores $value into the special variable 'return', and performs POP($registers_num, ...), then jumps to $31. The 
+purpose of popping is so you can remove the stack frame between setting your return value and actually returning.
+
+
+DECLARE($variable)
+------------------
+Declares one word as a variable named $variable. This operation is NOT executable, so put it at the end of your 
+program. Variables are initialized to 0.
+
+
+VAR($variable, $register)
+-------------------------
+Load the value of variable $variable into $register.
+
+
+STORE($variable, $register)
+---------------------------
+Store the value in $register as variable $variable.
+
+
+CONST($register, $value)
+------------------------
+Store the immediate value $value into $register.
